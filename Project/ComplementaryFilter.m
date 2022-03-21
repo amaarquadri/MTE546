@@ -1,6 +1,6 @@
 clear; clc; close all;
 
-for d = 0:10
+parfor d = 0:10
     for k = 1:50
         for p = 1:20
             if p <= 16
@@ -8,11 +8,16 @@ for d = 0:10
             else
                 type = "Testing";
             end
-            img = get_spectrogram("Handwritten Digits Data/P" + ...
-                num2str(p) + "/D" + num2str(d) + "/" + num2str(k) + ...
-                "_D" + num2str(d) + ".csv");
-            imwrite(img, "Processed Data/" + type + " Data/D" + ...
-                num2str(d) + "/P" + num2str(p) + "_" + num2str(k) + ".png");
+            disp("Processing...");
+            try
+                img = get_spectrogram("Handwritten Digits Data/P" + ...
+                    num2str(p) + "/D" + num2str(d) + "/" + num2str(k) + ...
+                    "_D" + num2str(d) + ".csv");
+                imwrite(img, "Processed Data/" + type + " Data/D" + ...
+                    num2str(d) + "/P" + num2str(p) + "_" + num2str(k) + ".png");
+            catch
+                disp("Error processing");
+            end
         end
     end
 end
@@ -34,15 +39,15 @@ function padded_data = pad_data(data, output_size)
     else
         padding = (output_size - length(data) - 1) / 2;
         padded_data = padarray(data, padding, "replicate", "both");
-        padded_data = [padded_data, data(end)];
+        padded_data = [padded_data; data(end)];
     end
 end
 
 function img = get_spectrogram(file_name)
     dataset = csvread(file_name, 1);
-    accel_readings = dataset(:, 1:3);
-    gyro_readings = dataset(:, 4:6);
-    mag_readings = dataset(:, 7:9);
+    accel_readings = movmean(dataset(:, 1:3), 5);
+    gyro_readings = movmean(dataset(:, 4:6), 5);
+    mag_readings = movmean(dataset(:, 7:9), 5);
 
     fuse = complementaryFilter("SampleRate", 20);
     [orientations, ~] = fuse(accel_readings, gyro_readings, mag_readings);

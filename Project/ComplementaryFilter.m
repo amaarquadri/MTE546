@@ -49,7 +49,7 @@ function img = get_spectrogram(file_name)
     gyro_readings = movmean(dataset(:, 4:6), 5);
     mag_readings = movmean(dataset(:, 7:9), 5);
 
-    fuse = complementaryFilter("SampleRate", 20);
+    fuse = complementaryFilter("SampleRate", 75);
     [orientations, ~] = fuse(accel_readings, gyro_readings, mag_readings);
     [yaws, pitches, rolls] = quat2angle(compact(orientations));
 
